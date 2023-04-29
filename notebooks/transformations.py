@@ -57,6 +57,7 @@ class ContrastNormalization(Transform):
     def apply_image(self, img):
         # Normalize the contrast of the image using linear scaling
         img = (self.max_value - self.min_value) * (img - img.min()) / (img.max() - img.min()) + self.min_value
+        img = (img*255).astype(np.int)
         return img
 
     def apply_coords(self, coords):
