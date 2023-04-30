@@ -242,3 +242,125 @@ class EnhanceBlueColor(Transform):
     def get_transform(self, image):
         # This transform does not depend on the input image
         return self
+    
+class IlluminationSimulation(Transform):
+    """
+    Apply a Gaussian blur to the input image.
+    """
+    def __init__(self):
+        super().__init__()
+        self.wavelength = .5e-3 # units are mm; assuming green light
+        delta_x = 0.5*self.wavelength # let's sample at nyquist rate
+        num_samples_x = 1440 # number of pixels in x direction
+        num_samples_y = 1080 # number of pixels in y direction
+        
+        # Define the spatial coordinates of the sample
+        starting_coordinate_x = (-num_samples_x/2) * delta_x
+        ending_coordinate_x = (num_samples_x/2 - 1) * delta_x
+
+        starting_coordinate_y = (-num_samples_y/2) * delta_x
+        ending_coordinate_y = (num_samples_y/2 - 1) * delta_x
+
+        # make linspace, meshgrid as needed for sample
+        x = np.linspace(starting_coordinate_x, ending_coordinate_x, num=num_samples_x)
+        y = np.linspace(starting_coordinate_y, ending_coordinate_y, num=num_samples_y)
+        self.xx, self.yy = np.meshgrid(x, y)
+
+        # define total range of spatial frequency axis, 1/mm
+        f_range = int(1/delta_x)
+        delta_fx_x = f_range/num_samples_x
+        delta_fy_y = f_range/num_samples_y
+
+        # make linspace, meshgrid as needed for lens transfer function
+        starting_coordinate_fx = (-num_samples_x/2) * delta_fx_x
+        ending_coordinate_fx = (num_samples_x/2 - 1) * delta_fx_x
+        starting_coordinate_fy = (-num_samples_y/2) * delta_fy_y
+        ending_coordinate_fy = (num_samples_y/2 - 1) * delta_fy_y
+
+        # make linspace, meshgrid as needed for lens transfer function
+        xf = np.linspace(starting_coordinate_fx, ending_coordinate_fx, num=num_samples_x)
+        yf = np.linspace(starting_coordinate_fy, ending_coordinate_fy, num=num_samples_y)
+        xxf, yyf = np.meshgrid(xf, yf)
+
+        # Define lens numerical aperture as percentage of total width of spatial freqeuncy domain
+        # Let's make the lens transfer function diameter 1/4th the total spatial frequency axis coordinates.
+        d =int((ending_coordinate_fx - starting_coordinate_fx+1) / 4)
+        r = d/2
+
+        # Define lens transfer function as matrix with 1's within desired radius, 0's outside
+        self.trans = np.zeros((num_samples_y, num_samples_x))
+        dist = np.sqrt((xxf)**2+(yyf)**2)
+        self.trans[np.where(dist<r)]=1
+
+        foo = np.array([[-15, 10], [-5, 10], [5, 10],[15,10], [-15, 0], [-5, 0], [5, 0], [15,0], [-15, -10], [-5, -10], [5, -10], [15,-10]])
+        self.plane_wave_angle_xy = ((foo/15) * 12) * np.pi/180        
+
+    def apply_image(self, img):        
+        img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY).astype(np.float32)
+        img_convert = self.convert_images(img_gray)
+        
+        # generate illumination dataset
+        illumination_data = np.zeros((1080, 1440, 12))
+        for i, plane_wave_angle in enumerate(self.plane_wave_angle_xy):
+
+            # Define plane waves
+            illumination_plane_wave = np.exp(1j*2*np.pi/self.wavelength * (np.sin(plane_wave_angle[0]) * self.xx + np.sin(plane_wave_angle[1]) * self.yy))
+
+            # Define field emerging from sample
+            emerging_field = np.multiply(illumination_plane_wave, img_convert)
+            
+            # Take 2D fourier transform of sample
+            fourier_field = np.fft.fftshift(np.fft.fft2(emerging_field))
+            
+            # Create filtered sample spectrum with center crop (64 x 64)
+            # trans: only within desired radius is 1
+            # so we can crop the outer part
+            fourier_field_trans = np.multiply(fourier_field, self.trans)
+            
+            # 0.5 point
+            # Propagate filtered sample spectrum to image plane
+            inverse_fourier_field = np.fft.ifft2(np.fft.ifftshift(fourier_field_trans))
+            
+            # 0.5 point
+            # save the intensity of inverse_fourier_field
+            illumination_data[:, :,i] = np.square(np.abs(inverse_fourier_field))
+
+            illumination_data = illumination_data.astype(np.uint16)
+            foo = cv2.convertScaleAbs(illumination_data, alpha=(255.0/65535.0))
+
+        return foo
+
+    def convert_images(self, sample_amplitude):
+        """
+        in real world, microscope samples are 3D and have thickness, which introduce a phase shift to the optical field
+        For simplicity, let's further assume the sample thickness and amplitude are inversely correlated, which means the thicker the sample is,
+        the more light it absorb.
+        """
+        sample_phase = 1 - sample_amplitude
+        optical_thickness = 0.02 * self.wavelength
+        return sample_amplitude * np.exp(1j * sample_phase*optical_thickness/self.wavelength)
+
+    def apply_coords(self, coords):
+        # This transform does not modify the bounding box coordinates
+        return coords
+
+    def get_transform(self, image):
+        # This transform does not depend on the input image
+        return self
+    
+class GrayscaleTransform(Transform):
+    def __init__(self):
+        pass
+    
+    def apply_image(self, img):
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY).astype(np.float32)
+        img = np.expand_dims(img, axis=2)
+        return img
+    
+    def apply_coords(self, coords):
+        # This transform does not modify the bounding box coordinates
+        return coords
+
+    def get_transform(self, image):
+        # This transform does not depend on the input image
+        return self
