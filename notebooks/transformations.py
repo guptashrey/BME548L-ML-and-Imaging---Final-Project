@@ -114,134 +114,6 @@ class Erosion(Transform):
     def get_transform(self, image):
         # This transform does not depend on the input image
         return self
-
-class SobelFilterX(Transform):
-    """
-    Perform dilation on the input image.
-    """
-    def __init__(self, kernel_size=1, iterations=1):
-        super().__init__()
-        self.kernel_size = kernel_size
-
-    def apply_image(self, img):
-        gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-        # Apply Sobel filter
-        img = cv2.Sobel(gray_img, cv2.CV_64F, 1, 0, ksize=self.kernel_size)        
-        return img
-
-    def apply_coords(self, coords):
-        # This transform does not modify the bounding box coordinates
-        return coords
-
-    def get_transform(self, image):
-        # This transform does not depend on the input image
-        return self
-    
-class SobelFilterY(Transform):
-    """
-    Perform dilation on the input image.
-    """
-    def __init__(self, kernel_size=1, iterations=1):
-        super().__init__()
-        self.kernel_size = kernel_size
-
-    def apply_image(self, img):
-        gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-        # Apply Sobel filter
-        img = cv2.Sobel(gray_img, cv2.CV_64F, 0, 1, ksize=self.kernel_size)       
-        return img
-
-    def apply_coords(self, coords):
-        # This transform does not modify the bounding box coordinates
-        return coords
-
-    def get_transform(self, image):
-        # This transform does not depend on the input image
-        return self
-    
-class EnhanceRedColor(Transform):
-    """
-    Perform dilation on the input image.
-    """
-    def __init__(self):
-        super().__init__()
-
-    def apply_image(self, img):
-        b, g, r = cv2.split(img)
-
-        # Enhance the red channel
-        r = cv2.equalizeHist(r)
-        
-        mask = np.zeros_like(img)
-        mask[:,:,2] = np.ones_like(r)  # Keep the red channel
-        img = cv2.merge((img * mask).astype(np.uint8))
-        
-        return img
-
-    def apply_coords(self, coords):
-        # This transform does not modify the bounding box coordinates
-        return coords
-
-    def get_transform(self, image):
-        # This transform does not depend on the input image
-        return self
-
-class EnhanceGreenColor(Transform):
-    """
-    Enhance the green color channel of the input image.
-    """
-    def __init__(self):
-        super().__init__()
-
-    def apply_image(self, img):
-        b, g, r = cv2.split(img)
-
-        # Enhance the green channel
-        g = cv2.equalizeHist(g)
-        
-        mask = np.zeros_like(img)
-        mask[:,:,1] = np.ones_like(g)  # Keep the green channel
-        img = cv2.merge((img * mask).astype(np.uint8))
-        
-        return img
-
-    def apply_coords(self, coords):
-        # This transform does not modify the bounding box coordinates
-        return coords
-
-    def get_transform(self, image):
-        # This transform does not depend on the input image
-        return self
-
-
-class EnhanceBlueColor(Transform):
-    """
-    Enhance the blue color channel of the input image.
-    """
-    def __init__(self):
-        super().__init__()
-
-    def apply_image(self, img):
-        b, g, r = cv2.split(img)
-
-        # Enhance the blue channel
-        b = cv2.equalizeHist(b)
-        
-        mask = np.zeros_like(img)
-        mask[:,:,0] = np.ones_like(b)  # Keep the blue channel
-        img = cv2.merge((img * mask).astype(np.uint8))
-        
-        return img
-
-    def apply_coords(self, coords):
-        # This transform does not modify the bounding box coordinates
-        return coords
-
-    def get_transform(self, image):
-        # This transform does not depend on the input image
-        return self
     
 class IlluminationSimulation(Transform):
     """
@@ -357,6 +229,140 @@ class GrayscaleTransform(Transform):
         img = np.expand_dims(img, axis=2)
         return img
     
+    def apply_coords(self, coords):
+        # This transform does not modify the bounding box coordinates
+        return coords
+
+    def get_transform(self, image):
+        # This transform does not depend on the input image
+        return self
+    
+class SobelFilter(Transform):
+    """
+    Apply Sobel filter on the input image.
+    """
+    def __init__(self):
+        super().__init__()
+
+    def apply_image(self, img):
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=3)
+        sobely = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=3)
+        sobel = np.sqrt(np.square(sobelx) + np.square(sobely))
+        sobel = np.clip(sobel, 0, 255).astype(np.uint8)
+        sobel = cv2.cvtColor(sobel, cv2.COLOR_GRAY2BGR)
+        return sobel
+
+    def apply_coords(self, coords):
+        # This transform does not modify the bounding box coordinates
+        return coords
+
+    def get_transform(self, image):
+        # This transform does not depend on the input image
+        return self
+
+
+class EnhanceGreenColor(Transform):
+    """
+    Enhance the green channel of an image.
+    """
+    def __init__(self):
+        super().__init__()
+
+    def apply_image(self, img):
+        
+        # Convert to RGB
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        
+        # Split the image
+        b, g, r = cv2.split(img)
+
+        # Enhance the green channel
+        g = cv2.equalizeHist(g)
+
+        img = cv2.merge((b, g, r))
+
+        return img
+
+    def apply_coords(self, coords):
+        # This transform does not modify the bounding box coordinates
+        return coords
+
+    def get_transform(self, image):
+        # This transform does not depend on the input image
+        return self
+
+class EnhanceRedColor(Transform):
+    """
+    Enhance the red channel of an image.
+    """
+    def __init__(self):
+        super().__init__()
+
+    def apply_image(self, img):
+        
+        # Convert to RGB
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        
+        # Split the image
+        b, g, r = cv2.split(img)
+
+        # Enhance the red channel
+        r = cv2.equalizeHist(r)
+
+        img = cv2.merge((b, g, r))
+
+        return img
+
+    def apply_coords(self, coords):
+        # This transform does not modify the bounding box coordinates
+        return coords
+
+    def get_transform(self, image):
+        # This transform does not depend on the input image
+        return self
+    
+class EnhanceBlueColor(Transform):
+    """
+    Enhance the blue channel of an image.
+    """
+    def __init__(self):
+        super().__init__()
+
+    def apply_image(self, img):
+        
+        # Convert to RGB
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        
+        # Split the image
+        b, g, r = cv2.split(img)
+
+        # Enhance the blue channel
+        b = cv2.equalizeHist(b)
+
+        img = cv2.merge((b, g, r))
+
+        return img
+
+    def apply_coords(self, coords):
+        # This transform does not modify the bounding box coordinates
+        return coords
+
+    def get_transform(self, image):
+        # This transform does not depend on the input image
+        return self
+
+class MedianFilter(Transform):
+    """
+    Apply median filtering with a kernel size of 5x5 to an image.
+    """
+    def __init__(self):
+        super().__init__()
+
+    def apply_image(self, img):
+        img = cv2.medianBlur(img, 15)
+        return img
+
     def apply_coords(self, coords):
         # This transform does not modify the bounding box coordinates
         return coords
