@@ -132,4 +132,4 @@ dmypy.json
 /TCIA_SegPC_dataset
 
 # Output models
-/output
+/outputs
