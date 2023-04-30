@@ -1,3 +1,4 @@
+# Library imports
 import numpy as np
 import cv2
 from detectron2.data.transforms import Transform, NoOpTransform
@@ -10,15 +11,30 @@ class CorrectColor(Transform):
         super().__init__()
 
     def apply_image(self, img):
+        """
+        Color correct the input image to RGB format
+
+        Args:
+            img (np.array): Input image
+
+        Returns:
+            np.array: Color corrected image
+        """
         ## Convert image to RGB format
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         return img
 
     def apply_coords(self, coords):
+        """
+        This transform does not modify the bounding box coordinates
+        """
         # This transform does not modify the bounding box coordinates
         return coords
 
     def get_transform(self, image):
+        """
+        This transform does not depend on the input image
+        """
         # This transform does not depend on the input image
         return self
 
@@ -28,20 +44,43 @@ class GaussianBlur(Transform):
     Apply a Gaussian blur to the input image.
     """
     def __init__(self, kernel_size=(15, 15), sigma=0.0):
+        """
+        Args:
+            kernel_size (tuple): Kernel size of the Gaussian filter.
+            sigma (float): Standard deviation of the Gaussian filter.
+        
+        Returns:
+            None
+        """
         super().__init__()
         self.kernel_size = kernel_size
         self.sigma = sigma
 
-    def apply_image(self, img):        
+    def apply_image(self, img): 
+        """
+        Apply a Gaussian blur to the input image.
+
+        Args:
+            img (np.array): Input image
+
+        Returns:
+            np.array: Image with Gaussian blur applied
+        """       
         ## apply Gaussian kernel
         img = cv2.GaussianBlur(img, self.kernel_size, self.sigma)
         return img
 
     def apply_coords(self, coords):
+        """
+        This transform does not modify the bounding box coordinates
+        """
         # This transform does not modify the bounding box coordinates
         return coords
 
     def get_transform(self, image):
+        """
+        This transform does not depend on the input image
+        """
         # This transform does not depend on the input image
         return self
 
@@ -50,21 +89,44 @@ class ContrastNormalization(Transform):
     Normalize the contrast of the input image.
     """
     def __init__(self, min_value=0, max_value=255):
+        """
+        Args:
+            min_value (int): Minimum value of the normalized image.
+            max_value (int): Maximum value of the normalized image.
+        
+        Returns:    
+            None
+        """
         super().__init__()
         self.min_value = min_value
         self.max_value = max_value
 
     def apply_image(self, img):
+        """
+        Normalize the contrast of the input image.
+
+        Args:
+            img (np.array): Input image
+
+        Returns:
+            np.array: Image with normalized contrast
+        """
         # Normalize the contrast of the image using linear scaling
         img = (self.max_value - self.min_value) * (img - img.min()) / (img.max() - img.min()) + self.min_value
         img = (img*255).astype(np.int)
         return img
 
     def apply_coords(self, coords):
+        """
+        This transform does not modify the bounding box coordinates
+        """
         # This transform does not modify the bounding box coordinates
         return coords
 
     def get_transform(self, image):
+        """
+        This transform does not depend on the input image
+        """
         # This transform does not depend on the input image
         return self
 
@@ -73,23 +135,44 @@ class Dilation(Transform):
     Perform dilation on the input image.
     """
     def __init__(self, kernel_size=9, iterations=1):
+        """
+        Args:
+            kernel_size (int): Kernel size of the dilation filter.
+            iterations (int): Number of times to apply the dilation filter. 
+
+        Returns:    
+            None
+        """
         super().__init__()
         self.radius = 5
         self.kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (kernel_size, kernel_size))
-        #self.kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2*self.radius+1, 2*self.radius+1))
-        #self.kernel = np.ones((kernel_size, kernel_size), np.uint8)
         self.iterations = iterations
 
     def apply_image(self, img):
+        """
+        Perform dilation on the input image.
+
+        Args:
+            img (np.array): Input image
+
+        Returns:    
+            np.array: Image with dilation applied
+        """
         # Perform dilation on the input image
         img = cv2.dilate(img, self.kernel, iterations=self.iterations)
         return img
 
     def apply_coords(self, coords):
+        """
+        This transform does not modify the bounding box coordinates
+        """
         # This transform does not modify the bounding box coordinates
         return coords
 
     def get_transform(self, image):
+        """
+        This transform does not depend on the input image
+        """
         # This transform does not depend on the input image
         return self
     
@@ -98,28 +181,58 @@ class Erosion(Transform):
     Perform dilation on the input image.
     """
     def __init__(self, kernel_size=9, iterations=1):
+        """
+        Args:
+            kernel_size (int): Kernel size of the dilation filter.
+            iterations (int): Number of times to apply the dilation filter. 
+
+        Returns:
+            None
+        """
         super().__init__()
         self.kernel = np.ones((kernel_size, kernel_size), np.uint8)
         self.iterations = iterations
 
     def apply_image(self, img):
+        """
+        Perform dilation on the input image.
+
+        Args:
+            img (np.array): Input image
+        
+        Returns:
+            np.array: Image with dilation applied
+        """
         # Perform dilation on the input image
         img = cv2.erode(img, self.kernel, iterations=1)
         return img
 
     def apply_coords(self, coords):
+        """
+        This transform does not modify the bounding box coordinates
+        """
         # This transform does not modify the bounding box coordinates
         return coords
 
     def get_transform(self, image):
+        """
+        This transform does not depend on the input image
+        """
         # This transform does not depend on the input image
         return self
     
 class IlluminationSimulation(Transform):
     """
-    Apply a Gaussian blur to the input image.
+    Simulate the illumination of the input image.
     """
     def __init__(self):
+        """
+        Args:   
+            None
+
+        Returns:
+            None
+        """
         super().__init__()
         self.wavelength = .5e-3 # units are mm; assuming green light
         delta_x = 0.5*self.wavelength # let's sample at nyquist rate
@@ -167,7 +280,16 @@ class IlluminationSimulation(Transform):
         foo = np.array([[-15, 10], [-5, 10], [5, 10],[15,10], [-15, 0], [-5, 0], [5, 0], [15,0], [-15, -10], [-5, -10], [5, -10], [15,-10]])
         self.plane_wave_angle_xy = ((foo/15) * 12) * np.pi/180        
 
-    def apply_image(self, img):        
+    def apply_image(self, img):   
+        """
+        Simulate the illumination of the input image.
+
+        Args:
+            img (np.array): Input image
+
+        Returns:
+            np.array: Illuminated image
+        """     
         img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY).astype(np.float32)
         img_convert = self.convert_images(img_gray)
         
@@ -221,19 +343,37 @@ class IlluminationSimulation(Transform):
         return self
     
 class GrayscaleTransform(Transform):
+    """
+    Convert the input image to grayscale.
+    """
     def __init__(self):
         pass
     
     def apply_image(self, img):
+        """
+        Convert the input image to grayscale.
+
+        Args:
+            img (np.array): Input image
+
+        Returns:
+            np.array: Grayscale image
+        """
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY).astype(np.float32)
         img = np.expand_dims(img, axis=2)
         return img
     
     def apply_coords(self, coords):
+        """
+        This transform does not modify the bounding box coordinates
+        """
         # This transform does not modify the bounding box coordinates
         return coords
 
     def get_transform(self, image):
+        """
+        This transform does not depend on the input image
+        """
         # This transform does not depend on the input image
         return self
     
@@ -245,6 +385,15 @@ class SobelFilter(Transform):
         super().__init__()
 
     def apply_image(self, img):
+        """
+        Apply Sobel filter on the input image.  
+
+        Args:   
+            img (np.array): Input image
+
+        Returns:
+            np.array: Image after Sobel filter
+        """
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=3)
         sobely = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=3)
@@ -254,10 +403,16 @@ class SobelFilter(Transform):
         return sobel
 
     def apply_coords(self, coords):
+        """
+        This transform does not modify the bounding box coordinates
+        """
         # This transform does not modify the bounding box coordinates
         return coords
 
     def get_transform(self, image):
+        """
+        This transform does not depend on the input image
+        """
         # This transform does not depend on the input image
         return self
 
@@ -270,6 +425,15 @@ class EnhanceGreenColor(Transform):
         super().__init__()
 
     def apply_image(self, img):
+        """
+        Enhance the green channel of an image.
+
+        Args:   
+            img (np.array): Input image
+
+        Returns:
+            np.array: Image with enhanced green channel
+        """
         
         # Convert to RGB
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -285,10 +449,16 @@ class EnhanceGreenColor(Transform):
         return img
 
     def apply_coords(self, coords):
+        """
+        This transform does not modify the bounding box coordinates
+        """
         # This transform does not modify the bounding box coordinates
         return coords
 
     def get_transform(self, image):
+        """
+        This transform does not depend on the input image
+        """
         # This transform does not depend on the input image
         return self
 
@@ -300,6 +470,15 @@ class EnhanceRedColor(Transform):
         super().__init__()
 
     def apply_image(self, img):
+        """
+        Enhance the red channel of an image. 
+    
+        Args:
+            img (np.array): Input image
+        
+        Returns:
+            np.array: Image with enhanced red channel
+        """
         
         # Convert to RGB
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -315,10 +494,16 @@ class EnhanceRedColor(Transform):
         return img
 
     def apply_coords(self, coords):
+        """
+        This transform does not modify the bounding box coordinates
+        """
         # This transform does not modify the bounding box coordinates
         return coords
 
     def get_transform(self, image):
+        """
+        This transform does not depend on the input image
+        """
         # This transform does not depend on the input image
         return self
     
@@ -330,6 +515,15 @@ class EnhanceBlueColor(Transform):
         super().__init__()
 
     def apply_image(self, img):
+        """
+        Enhance the blue channel of an image.   
+
+        Args:   
+            img (np.array): Input image
+
+        Returns:    
+            np.array: Image with enhanced blue channel
+        """
         
         # Convert to RGB
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -340,15 +534,22 @@ class EnhanceBlueColor(Transform):
         # Enhance the blue channel
         b = cv2.equalizeHist(b)
 
+        # Merge the channels
         img = cv2.merge((b, g, r))
 
         return img
 
     def apply_coords(self, coords):
+        """
+        This transform does not modify the bounding box coordinates
+        """
         # This transform does not modify the bounding box coordinates
         return coords
 
     def get_transform(self, image):
+        """
+        This transform does not depend on the input image
+        """
         # This transform does not depend on the input image
         return self
 
@@ -364,9 +565,15 @@ class MedianFilter(Transform):
         return img
 
     def apply_coords(self, coords):
+        """
+        This transform does not modify the bounding box coordinates
+        """
         # This transform does not modify the bounding box coordinates
         return coords
 
     def get_transform(self, image):
+        """
+        This transform does not depend on the input image
+        """
         # This transform does not depend on the input image
         return self

@@ -1,5 +1,7 @@
+# Locaal imports
 from transformations import *
 
+# External imports
 import cv2
 import matplotlib.pyplot as plt
 
@@ -8,7 +10,10 @@ def select_transformation(transformation_type=None):
     Define the type of augmentation to apply to the images.
     
     Args:
+        transformation_type (str): Type of augmentation to apply to the images.
     
+    Returns:
+        transformation (list): List of transformations to apply to the images.
     """
     if transformation_type is None:
         transformation = NoOpTransform()
@@ -21,7 +26,13 @@ def select_transformation(transformation_type=None):
 def test_transformation(img_path="../TCIA_SegPC_dataset/coco/x/106.bmp", transformation_type=None):
     """
     Display the transformation on the image
-    
+
+    Args:
+        img_path (str): Path to the image to be transformed.
+        transformation_type (str): Type of augmentation to apply to the images.
+
+    Returns:
+        None
     """
     
     ## Read the image
@@ -44,7 +55,6 @@ def test_transformation(img_path="../TCIA_SegPC_dataset/coco/x/106.bmp", transfo
             plt.axis('off')
 
     else:
-
         ## Create a figure with two subplots in a single row
         fig, axs = plt.subplots(nrows=1, ncols=2, figsize=(8, 4))
 
