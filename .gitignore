@@ -133,3 +133,12 @@ dmypy.json
 
 # Output models
 /outputs
+
+# Latex
+*.aux
+*.log
+*.out
+*.synctex.gz
+*.pdf
+*.fdb_latexmk
+*.fls
