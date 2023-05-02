@@ -91,12 +91,12 @@ The contrast of a sample could be a critical factor for accurate segmentation. B
   \centering
   \begin{minipage}{.5\textwidth}
     \centering
-    \includegraphics[width=.4\linewidth]{1.png}
+    \includegraphics[width=.5\linewidth]{1.png}
     \captionof{figure}{Original Image}
   \end{minipage}%
   \begin{minipage}{.4\textwidth}
     \centering
-    \includegraphics[width=.6\linewidth]{2.jpg}
+    \includegraphics[width=.8\linewidth]{2.jpg}
     \captionof{figure}{Simulation of 12 light waves hitting a sample from different angles
     }
   \end{minipage}
@@ -114,12 +114,12 @@ The gradient Sobel filter is a widely used edge detection algorithm that detects
   \centering
   \begin{minipage}{.5\textwidth}
     \centering
-    \includegraphics[width=.4\linewidth]{3.png}
-    \captionof{figure}{Image with contrast normalization}
+    \includegraphics[width=.5\linewidth]{3.png}
+    \captionof{figure}{Image after contrast normalization}
   \end{minipage}%
   \begin{minipage}{.4\textwidth}
     \centering
-    \includegraphics[width=.6\linewidth]{4.png}
+    \includegraphics[width=.63\linewidth]{4.png}
     \captionof{figure}{Image after Dilation operation}
   \end{minipage}
 \end{figure}
@@ -132,13 +132,13 @@ Color channel enhancement involves increasing the contrast and brightness of a s
   \centering
   \begin{minipage}{.5\textwidth}
     \centering
-    \includegraphics[width=.4\linewidth]{5.png}
+    \includegraphics[width=.5\linewidth]{5.png}
     \captionof{figure}{Image after Erosion operation}
   \end{minipage}%
   \begin{minipage}{.4\textwidth}
     \centering
-    \includegraphics[width=.6\linewidth]{6.png}
-    \captionof{figure}{Image with Sobel Gradient filter}
+    \includegraphics[width=.63\linewidth]{6.png}
+    \captionof{figure}{Image after Sobel filter}
   \end{minipage}
 \end{figure}
 \subsubsection{Blur Filters}
@@ -147,11 +147,25 @@ Applying a Gaussian or Median blur to an image can improve the segmentation of M
 
 \begin{figure}
   \centering
+  \begin{minipage}{1\textwidth}
+    \centering
+    \includegraphics[width=0.8\linewidth]{7.png}
+    \captionof{figure}{Image after applying color channel enhancement}
+  \end{minipage}%
+\end{figure}
+
+\begin{figure}
+  \centering
   \begin{minipage}{.5\textwidth}
     \centering
-    \includegraphics[width=1\linewidth]{7.png}
-    \captionof{figure}{Image after Erosion operation}
+    \includegraphics[width=.5\linewidth]{8.png}
+    \captionof{figure}{Image after Gaussian Blur}
   \end{minipage}%
+  \begin{minipage}{.4\textwidth}
+    \centering
+    \includegraphics[width=.63\linewidth]{9.png}
+    \captionof{figure}{Image after Median Blur}
+  \end{minipage}
 \end{figure}
 
 \begin{table}[b]
@@ -188,6 +202,15 @@ Applying a Gaussian or Median blur to an image can improve the segmentation of M
    \bottomrule
  \end{tabular}
 \end{table}
+
+\begin{figure}
+  \centering
+  \begin{minipage}{1\textwidth}
+    \centering
+    \includegraphics[width=1\linewidth]{10.png}
+    \captionof{figure}{Machine Learning Pipeline \emph{(*trainable layer exists only in illumination simulation case)}}
+  \end{minipage}%
+\end{figure}
 
 \subsection{Machine Learning Model}
 
